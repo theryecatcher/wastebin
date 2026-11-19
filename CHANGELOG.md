@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- Show pastes with an `html` or `htm` extension as standalone pages at
+  `/html/{id}`, toggled from the paste view like rendered Markdown. The page is
+  served unmodified under a CSP `sandbox` that blocks scripts, forms and access
+  to wastebin cookies.
+
 ### Fixed
 
 - Reject off-origin and scheme-relative `Referer` values when redirecting back

@@ -46,6 +46,7 @@ to released versions here:
   [syntect](https://github.com/trishume/syntect)
 * renders Markdown pastes to HTML, including GitHub-flavored tables, task lists
   and admonitions
+* shows HTML pastes as sandboxed pages
 * comes with [nine color themes](https://matze.github.io/wastebin/) in light and
   dark mode
 * encrypts entries using ChaCha20Poly1305 and argon2 hashed passwords
@@ -168,7 +169,7 @@ When viewing a paste, you can use
 * <kbd>q</kbd> to display the current URL as a QR code,
 * <kbd>p</kbd> to view the formatted paste,
 * <kbd>w</kbd> to toggle line wrapping on and off (off by default),
-* <kbd>m</kbd> to toggle the rendered view on Markdown pastes and
+* <kbd>m</kbd> to toggle the rendered view on Markdown and HTML pastes and
 * <kbd>?</kbd> to view the list of keybindings.
 
 To paste some text you can also use the <kbd>ctrl</kbd>+<kbd>s</kbd> key
@@ -190,6 +191,20 @@ event handlers and `javascript:` URLs are stripped. To permit external images
 embedded via `![alt](https://…)`, the Content Security Policy is relaxed to
 `img-src *` for `/md/*` responses only; all other routes keep the strict
 default.
+
+### HTML pages
+
+Pastes created with an `html` or `htm` extension can be viewed as a page of
+their own at `/html/{id}`, reached through the same toggle as rendered
+Markdown. The paste is served unmodified, without the wastebin interface, so
+inline styles, SVG and web fonts render the way the author wrote them.
+Burn-after-reading and password-protected pastes show the usual confirmation
+and password pages first.
+
+The page is served with a Content Security Policy `sandbox`, which gives it an
+opaque origin: it cannot read wastebin cookies or act on behalf of the viewer.
+Scripts, form submissions and top-level navigation are blocked. Stylesheets may
+load from Google Fonts and images from anywhere, as on `/md/*`.
 
 ### Configuration
 

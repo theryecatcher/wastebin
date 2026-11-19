@@ -82,7 +82,7 @@ impl FromRef<AppState> for Cache {
     }
 }
 
-async fn security_headers_layer(req: Request, next: Next) -> impl IntoResponse {
+async fn security_headers_layer(req: Request, next: Next) -> Response {
     // Rendered Markdown may embed remote images via `![](…)`; relax img-src for that route only.
     const CSP_STRICT: HeaderValue = HeaderValue::from_static(
         "default-src 'none'; script-src 'self'; img-src 'self' data: ; style-src 'self' data: ; font-src 'self' data: ; object-src 'none' ; base-uri 'none' ; frame-ancestors 'none' ; form-action 'self' ;",
@@ -97,9 +97,16 @@ async fn security_headers_layer(req: Request, next: Next) -> impl IntoResponse {
         CSP_STRICT
     };
 
-    let headers: [(HeaderName, HeaderValue); 7] = [
+    let mut response = next.run(req).await;
+    let headers = response.headers_mut();
+
+    // Pastes served as HTML documents carry their own sandbox policy.
+    if !headers.contains_key(CONTENT_SECURITY_POLICY) {
+        headers.insert(CONTENT_SECURITY_POLICY, csp);
+    }
+
+    let defaults: [(HeaderName, HeaderValue); 6] = [
         (SERVER, HeaderValue::from_static(env!("CARGO_PKG_NAME"))),
-        (CONTENT_SECURITY_POLICY, csp),
         (REFERRER_POLICY, HeaderValue::from_static("same-origin")),
         (X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff")),
         (X_FRAME_OPTIONS, HeaderValue::from_static("SAMEORIGIN")),
@@ -110,7 +117,11 @@ async fn security_headers_layer(req: Request, next: Next) -> impl IntoResponse {
         (X_XSS_PROTECTION, HeaderValue::from_static("1; mode=block")),
     ];
 
-    (headers, next.run(req).await)
+    for (name, value) in defaults {
+        headers.insert(name, value);
+    }
+
+    response
 }
 
 async fn handle_service_errors(
@@ -206,6 +217,10 @@ fn make_app(state: AppState, timeout: Duration, max_body_size: usize) -> Router 
         .route(
             "/md/{id}",
             get(html::rendered::get).post(html::rendered::get),
+        )
+        .route(
+            "/html/{id}",
+            get(html::document::get).post(html::document::get),
         )
         .route("/burn/{id}", get(html::burn::get))
         .route(

@@ -207,7 +207,7 @@ static DE: phf::Map<&'static str, &'static str> = phf_map! {
     "paste.help.download" => "Herunterladen",
     "paste.help.show_qr" => "QR-Code anzeigen",
     "paste.help.toggle_wrap" => "Zeilenumbruch umschalten",
-    "paste.help.toggle_rendered" => "Markdown Ansicht umschalten",
+    "paste.help.toggle_rendered" => "Gerenderte Ansicht umschalten",
     "paste.help.toggle_help" => "Hilfe umschalten",
 
     "password.show" => "Passwort anzeigen",
